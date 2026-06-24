@@ -5,7 +5,6 @@ import { loadSettings, generalSettings } from './utils/storage-utils';
 import { getDomain } from './utils/string-utils';
 import { extractContentBySelector as extractContentBySelectorShared } from './utils/shared';
 import Defuddle from 'defuddle';
-import { createMarkdownContent } from 'defuddle/full';
 import { flattenShadowDom } from './utils/flatten-shadow-dom';
 import { serializeChildren } from './utils/dom-utils';
 import { saveFile } from './utils/file-utils';
@@ -13,6 +12,7 @@ import { debugLog } from './utils/debug';
 import { updateSidebarWidth, addResizeHandle, cleanupResizeHandlers } from './utils/iframe-resize';
 import { parseForClip } from './utils/clip-utils';
 import { prepareDocumentForClip } from './utils/scroll-capture';
+import { createClipMarkdownContent } from './utils/markdown-utils';
 
 declare global {
 	interface Window {
@@ -158,7 +158,7 @@ declare global {
 					const defuddled = parseForClip(clipDocument, document.URL);
 
 					// Convert HTML content to markdown
-					const markdown = createMarkdownContent(defuddled.content, document.URL);
+					const markdown = createClipMarkdownContent(defuddled.content, document.URL);
 
 					// Copy to clipboard
 					const textArea = document.createElement("textarea");
@@ -182,7 +182,7 @@ declare global {
 				try {
 					const clipDocument = await prepareDocumentForClip(document);
 					const defuddled = parseForClip(clipDocument, document.URL);
-					const markdown = createMarkdownContent(defuddled.content, document.URL);
+					const markdown = createClipMarkdownContent(defuddled.content, document.URL);
 					const title = defuddled.title || document.title || 'Untitled';
 					const fileName = title.replace(/[/\\?%*:|"<>]/g, '-');
 					await saveFile({

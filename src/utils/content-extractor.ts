@@ -1,5 +1,4 @@
 import { ExtractedContent } from '../types/types';
-import { createMarkdownContent } from 'defuddle/full';
 import { sanitizeFileName } from './string-utils';
 import { buildVariables, addSchemaOrgDataToVariables } from './shared';
 import browser from './browser-polyfill';
@@ -12,6 +11,7 @@ import {
 	wrapElementWithMark,
 	wrapTextWithMark
 } from './dom-utils';
+import { createClipMarkdownContent } from './markdown-utils';
 
 // Define ElementHighlightData type inline since it's not exported from highlighter.ts
 interface ElementHighlightData extends HighlightData {
@@ -149,7 +149,7 @@ export async function initializePageContent(
 		let selectedMarkdown = '';
 		if (selectedHtml) {
 			content = selectedHtml;
-			selectedMarkdown = createMarkdownContent(selectedHtml, currentUrl);
+			selectedMarkdown = createClipMarkdownContent(selectedHtml, currentUrl);
 		}
 
 		// Process highlights after getting the base content
@@ -157,9 +157,9 @@ export async function initializePageContent(
 			content = processHighlights(content, highlights);
 		}
 
-		const markdownBody = createMarkdownContent(content, currentUrl);
+		const markdownBody = createClipMarkdownContent(content, currentUrl);
 
-		const highlightsData = collapseGroupsForExport(highlights, c => createMarkdownContent(c, currentUrl));
+		const highlightsData = collapseGroupsForExport(highlights, c => createClipMarkdownContent(c, currentUrl));
 
 		const noteName = sanitizeFileName(title);
 

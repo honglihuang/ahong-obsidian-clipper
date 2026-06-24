@@ -3,13 +3,13 @@
 // The caller provides a DocumentParser for their environment.
 
 import DefuddleClass from 'defuddle';
-import { createMarkdownContent } from 'defuddle/full';
 import { compileTemplate, SelectorProcessor } from './utils/template-compiler';
 import { AsyncResolver, RenderContext } from './utils/renderer';
 import { applyFilters } from './utils/filters';
 import { buildVariables, generateFrontmatter, extractContentBySelector, selectorContentToString, formatPropertyValue } from './utils/shared';
 import { sanitizeFileName } from './utils/string-utils';
 import { Template, Property } from './types/types';
+import { createClipMarkdownContent } from './utils/markdown-utils';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -186,7 +186,7 @@ export async function clip(options: ClipOptions): Promise<ClipResult> {
 	const defuddleResult = defuddle.parse();
 
 	// Convert to markdown
-	const markdownContent = createMarkdownContent(defuddleResult.content, url);
+	const markdownContent = createClipMarkdownContent(defuddleResult.content, url);
 
 	// Build template variables
 	const variables = buildVariables({

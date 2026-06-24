@@ -1,11 +1,11 @@
-import { createMarkdownContent } from 'defuddle/full';
+import { createClipMarkdownContent } from '../markdown-utils';
 
 export const markdown = (str: string, param?: string): string => {
 	const baseUrl = param || 'about:blank';
 	try {
-		return createMarkdownContent(str, baseUrl);
+		return createClipMarkdownContent(str, baseUrl);
 	} catch (error) {
-		console.error('Error in createMarkdownContent:', error);
+		console.error('Error in createClipMarkdownContent:', error);
 		return str;
 	}
 };

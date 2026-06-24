@@ -4,7 +4,6 @@ import { translatePage, getMessage, setupLanguageAndDirection } from '../utils/i
 import { addBrowserClassToHtml, detectBrowser } from '../utils/browser-detection';
 import DOMPurify from 'dompurify';
 import Defuddle from 'defuddle';
-import { createMarkdownContent } from 'defuddle/full';
 import { getFontCss } from '../utils/font-utils';
 import { ReaderSettings } from '../types/types';
 import dayjs from 'dayjs';
@@ -12,6 +11,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { createIcons } from 'lucide';
 import { icons } from '../icons/icons';
 import { initializeMenu } from '../managers/menu';
+import { createClipMarkdownContent } from '../utils/markdown-utils';
 
 dayjs.extend(relativeTime);
 
@@ -1244,7 +1244,7 @@ function createHighlightItem(entries: HighlightEntry[], pageUrl: string): HTMLEl
 	copyIcon.setAttribute('data-lucide', 'copy');
 	copyBtn.appendChild(copyIcon);
 	copyBtn.addEventListener('click', async () => {
-		const markdown = entries.map(e => createMarkdownContent(e.data.content || '', pageUrl)).join('\n\n');
+		const markdown = entries.map(e => createClipMarkdownContent(e.data.content || '', pageUrl)).join('\n\n');
 		await navigator.clipboard.writeText(markdown);
 		copyBtn.classList.add('is-copied');
 		setButtonIcon(copyBtn, 'check');
