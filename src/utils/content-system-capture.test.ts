@@ -167,6 +167,43 @@ describe('captureContentSystemDocument', () => {
 		expect(markdown).toContain(`[一个博主AI短剧拆解的内容库吧【只读】](${figmaUrl})`);
 	});
 
+	test('uses original Discourse upload URLs for linked images', async () => {
+		document.head.innerHTML = '<meta name="generator" content="Discourse 2026.6.0">';
+		document.body.innerHTML = '<main><article data-post-id="101">Current DOM only has one post</article></main>';
+
+		const optimizedUrl = 'https://cdn3.ldstatic.com/optimized/4X/3/5/6/hash_2_508x499.png';
+		const originalUrl = 'https://cdn3.ldstatic.com/original/4X/3/5/6/hash.png';
+		const fetchJson = async () => ({
+			id: 123,
+			title: 'Image topic',
+			post_stream: {
+				stream: [101],
+				posts: [
+					{
+						id: 101,
+						username: 'alice',
+						name: 'Alice',
+						created_at: '2026-01-01T00:00:00.000Z',
+						cooked: `<p><a href="${originalUrl}" class="lightbox"><img src="${optimizedUrl}" alt="image|696"></a></p>`,
+						post_number: 1,
+						post_url: '/t/topic/123/1',
+					},
+				],
+			},
+		});
+
+		const captured = await captureContentSystemDocument(document, {
+			url: 'https://forum.example/t/topic/123',
+			fetchJson,
+		});
+		const defuddled = new Defuddle(captured!, { url: 'https://forum.example/t/topic/123' }).parse();
+		const markdown = createMarkdownContent(defuddled.content, 'https://forum.example/t/topic/123');
+
+		expect(markdown).toContain(originalUrl);
+		expect(markdown).not.toContain(optimizedUrl);
+		expect(captured!.querySelector('img')?.getAttribute('src')).toBe(originalUrl);
+	});
+
 	test('returns null when the page is not a known content system', async () => {
 		document.head.innerHTML = '<title>Plain page</title>';
 		document.body.innerHTML = '<main><p>Plain content</p></main>';

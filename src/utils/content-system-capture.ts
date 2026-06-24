@@ -106,6 +106,32 @@ function mediaUrl(element: Element): string | null {
 		|| null;
 }
 
+function isImageUrl(url: string): boolean {
+	try {
+		const pathname = new URL(url).pathname.toLowerCase();
+		return /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/.test(pathname);
+	} catch {
+		return /\.(png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#].*)?$/i.test(url);
+	}
+}
+
+function preferOriginalLinkedImages(root: HTMLElement) {
+	const images = Array.from(root.querySelectorAll('a[href] > img[src]')) as HTMLImageElement[];
+	for (const image of images) {
+		const link = image.parentElement as HTMLAnchorElement | null;
+		const href = link?.getAttribute('href');
+		if (!href) continue;
+
+		const src = image.getAttribute('src') || '';
+		const pointsToOriginal = href.includes('/original/') || isImageUrl(href);
+		const sourceIsOptimized = src.includes('/optimized/') || src.includes('_2_');
+		if (!pointsToOriginal || !sourceIsOptimized) continue;
+
+		image.setAttribute('src', href);
+		image.removeAttribute('srcset');
+	}
+}
+
 function removeEmptyOnebox(element: Element) {
 	const parent = element.parentElement;
 	if (!parent?.classList.contains('onebox')) return;
@@ -154,6 +180,7 @@ function appendDiscoursePost(doc: Document, article: HTMLElement, post: Discours
 	const content = doc.createElement('div');
 	content.className = 'cooked';
 	setElementHTML(content, post.cooked || '');
+	preferOriginalLinkedImages(content);
 	materializeMediaLinks(content);
 	section.appendChild(content);
 
