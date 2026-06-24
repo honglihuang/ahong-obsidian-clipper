@@ -6,12 +6,19 @@ describe('normalizeMarkdownImageLinks', () => {
 		const url = 'https://cdn3.ldstatic.com/original/4X/7/b/a/hash.jpeg';
 
 		expect(normalizeMarkdownImageLinks(`[![4](${url})](${url} "4")`))
-			.toBe(`![4](${url})`);
+			.toBe(`![image](${url})`);
 	});
 
 	test('keeps image links that point somewhere else', () => {
 		const markdown = '[![preview](https://example.com/thumb.jpg)](https://example.com/page)';
 
 		expect(normalizeMarkdownImageLinks(markdown)).toBe(markdown);
+	});
+
+	test('replaces numeric-only image alt text with a generic label', () => {
+		const url = 'https://cdn3.ldstatic.com/original/4X/7/b/a/hash.jpeg';
+
+		expect(normalizeMarkdownImageLinks(`![4](${url})`))
+			.toBe(`![image](${url})`);
 	});
 });
