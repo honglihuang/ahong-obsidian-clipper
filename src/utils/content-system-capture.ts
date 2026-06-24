@@ -132,6 +132,31 @@ function preferOriginalLinkedImages(root: HTMLElement) {
 	}
 }
 
+function sameUrl(left: string, right: string, baseUrl: string): boolean {
+	try {
+		return new URL(left, baseUrl).href === new URL(right, baseUrl).href;
+	} catch {
+		return left === right;
+	}
+}
+
+function unwrapRedundantImageLinks(root: HTMLElement, baseUrl: string) {
+	const images = Array.from(root.querySelectorAll('a[href] > img[src]')) as HTMLImageElement[];
+	for (const image of images) {
+		const link = image.parentElement as HTMLAnchorElement | null;
+		const href = link?.getAttribute('href');
+		const src = image.getAttribute('src');
+		if (!link || !href || !src || !sameUrl(href, src, baseUrl)) continue;
+
+		const hasOnlyImage = Array.from(link.childNodes).every(node => {
+			return node === image || (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim());
+		});
+		if (!hasOnlyImage) continue;
+
+		link.replaceWith(image);
+	}
+}
+
 function removeEmptyOnebox(element: Element) {
 	const parent = element.parentElement;
 	if (!parent?.classList.contains('onebox')) return;
@@ -181,6 +206,7 @@ function appendDiscoursePost(doc: Document, article: HTMLElement, post: Discours
 	content.className = 'cooked';
 	setElementHTML(content, post.cooked || '');
 	preferOriginalLinkedImages(content);
+	unwrapRedundantImageLinks(content, baseUrl);
 	materializeMediaLinks(content);
 	section.appendChild(content);
 

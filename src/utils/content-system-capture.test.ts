@@ -204,6 +204,42 @@ describe('captureContentSystemDocument', () => {
 		expect(captured!.querySelector('img')?.getAttribute('src')).toBe(originalUrl);
 	});
 
+	test('unwraps Discourse image links that point to the same image', async () => {
+		document.head.innerHTML = '<meta name="generator" content="Discourse 2026.6.0">';
+		document.body.innerHTML = '<main><article data-post-id="101">Current DOM only has one post</article></main>';
+
+		const originalUrl = 'https://cdn3.ldstatic.com/original/4X/7/b/a/hash.jpeg';
+		const fetchJson = async () => ({
+			id: 123,
+			title: 'Image topic',
+			post_stream: {
+				stream: [101],
+				posts: [
+					{
+						id: 101,
+						username: 'alice',
+						name: 'Alice',
+						created_at: '2026-01-01T00:00:00.000Z',
+						cooked: `<p><a href="${originalUrl}" class="lightbox" title="4"><img src="${originalUrl}" alt="4"></a></p>`,
+						post_number: 1,
+						post_url: '/t/topic/123/1',
+					},
+				],
+			},
+		});
+
+		const captured = await captureContentSystemDocument(document, {
+			url: 'https://forum.example/t/topic/123',
+			fetchJson,
+		});
+		const defuddled = new Defuddle(captured!, { url: 'https://forum.example/t/topic/123' }).parse();
+		const markdown = createMarkdownContent(defuddled.content, 'https://forum.example/t/topic/123');
+
+		expect(markdown).toContain(`![4](${originalUrl})`);
+		expect(markdown).not.toContain(`[![4](${originalUrl})](${originalUrl} "4")`);
+		expect(captured!.querySelector('a > img')).toBeNull();
+	});
+
 	test('returns null when the page is not a known content system', async () => {
 		document.head.innerHTML = '<title>Plain page</title>';
 		document.body.innerHTML = '<main><p>Plain content</p></main>';
