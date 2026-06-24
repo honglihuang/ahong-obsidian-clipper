@@ -3,7 +3,7 @@ import { setElementHTML } from './dom-utils';
 
 // Parse document content for clipping. In reader mode, extracts from
 // the article's original HTML to avoid reader UI artifacts.
-export function parseForClip(doc: Document) {
+export function parseForClip(doc: Document, url = doc.URL) {
 	const readerArticle = doc.querySelector('.obsidian-reader-active .obsidian-reader-content article');
 	if (readerArticle) {
 		const readerDoc = doc.implementation.createHTMLDocument();
@@ -15,7 +15,7 @@ export function parseForClip(doc: Document) {
 				...Array.from(readerArticle.childNodes).map(n => readerDoc.importNode(n, true))
 			);
 		}
-		return new Defuddle(readerDoc, { url: '' }).parse();
+		return new Defuddle(readerDoc, { url }).parse();
 	}
-	return new Defuddle(doc, { url: doc.URL }).parse();
+	return new Defuddle(doc, { url }).parse();
 }
